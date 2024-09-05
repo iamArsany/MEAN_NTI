@@ -5,14 +5,14 @@ dotenv.config();
 
 const DBconnection = async () => {
   try {
-    await mongoose.connect(process.env.DB).then(() => {
+    await mongoose.connect(process.env.DB!).then(() => {
       console.log(`this is connected to theeee ${process.env.DB}`);
     }).catch((err) => {
-      console.error(err);
+      console.error("asdf",err);
     })
 
   } catch (err) {
-    console.error(err);
+    console.error("asdf",err);
     process.exit(1);
   }
 }

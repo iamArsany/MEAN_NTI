@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction } from "express";
-import {  Model } from "mongoose";
+import { Model } from "mongoose";
 import IfilterData from "../interfaces/Filterdata";
+import callback from "../interfaces/callback";
 
-export const getAll = <modelType>(model: Model<any>, modelName: string) =>
+export const getAll = <modelType>(model: Model<any>, modelName: string, callback?: callback) =>
     async (req: Request, res: Response, next: NextFunction) => {
         try {
             let filterData: any = {};
@@ -10,6 +11,11 @@ export const getAll = <modelType>(model: Model<any>, modelName: string) =>
                 filterData = req.filterData;
             }
             const Models: modelType[] = await model.find(filterData);
+            if (callback) {
+                let result=await callback(req,res,next);
+                if (result===false)return ; 
+
+            }
             res.status(200).json({ data: Models });
         } catch (error) {
             console.error(`Error fetching ${modelName}:`, error);
@@ -37,7 +43,7 @@ export const CreateOne = <modelType>(model: Model<any>) =>
         try {
             const created: modelType = await model.create(req.body);
             res.status(201).json({ message: "created successfully", data: created });
-        } catch (error:any) {
+        } catch (error: any) {
             // console.error("Error creating document:",error);
             next(error);
         }
@@ -57,9 +63,13 @@ export const updateOne = <modelType>(model: Model<any>, modelName: string) =>
             next(error)
         }
     };
-
-export const deleteOne = <modelType>(model: Model<any>, modelName: string) =>
+export const deleteOne = <modelType>(model: Model<any>, modelName: string, callback?: callback) =>
     async (req: Request, res: Response, next: NextFunction) => {
+        if (callback) {
+            if (!callback(req, res, next)) return;
+
+        }
+        console.log("iam here in the delete function")
         try {
             const id = req.params.id;
             const deleted = await model.findByIdAndDelete(id);
